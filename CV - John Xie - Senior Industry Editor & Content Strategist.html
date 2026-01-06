@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>John Xie — Industry Editor</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --ink: #1a1a1a;
+            --paper: #faf9f7;
+            --accent: #b8860b;
+            --muted: #555555;
+            --rule: #d4d0cb;
+            --highlight-bg: #f0ebe3;
+            
+            --font-display: 'Playfair Display', Georgia, serif;
+            --font-body: 'Source Sans 3', -apple-system, sans-serif;
+            
+            --space-xs: 0.5rem;
+            --space-sm: 1rem;
+            --space-md: 2rem;
+            --space-lg: 4rem;
+            --space-xl: 8rem;
+        }
+        
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        ::selection {
+            background: var(--accent);
+            color: var(--paper);
+        }
+        
+        html {
+            font-size: 18px;
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: var(--font-body);
+            background: var(--paper);
+            color: var(--ink);
+            line-height: 1.7;
+            font-weight: 500;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* Noise texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.025;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            z-index: 9999;
+        }
+        
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--space-md);
+        }
+        
+        /* Header */
+        header {
+            padding: var(--space-xl) 0 var(--space-lg);
+            border-bottom: 1px solid var(--rule);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header-grid {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: var(--space-lg);
+            align-items: end;
+        }
+        
+        /* Photo styling with duotone effect */
+        .photo-container {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center top;
+            filter: grayscale(100%) contrast(1.1);
+        }
+        
+        .photo-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--accent);
+            mix-blend-mode: multiply;
+            opacity: 0.6;
+        }
+        
+        .masthead {
+            position: relative;
+        }
+        
+        .issue-number {
+            font-family: var(--font-body);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: var(--space-sm);
+            display: block;
+        }
+        
+        h1 {
+            font-family: var(--font-display);
+            font-size: clamp(3.5rem, 10vw, 7rem);
+            font-weight: 600;
+            line-height: 0.9;
+            letter-spacing: -0.02em;
+            margin-bottom: var(--space-xs);
+        }
+        
+        h1 .surname {
+            display: block;
+            font-style: italic;
+            font-weight: 500;
+        }
+        
+        .title-role {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 500;
+            font-style: italic;
+            color: var(--muted);
+            margin-top: var(--space-sm);
+        }
+        
+        .header-meta {
+            text-align: right;
+            font-size: 0.9rem;
+            font-weight: 500;
+            line-height: 1.8;
+        }
+        
+        .header-meta a {
+            color: var(--ink);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+        
+        .header-meta a:hover {
+            border-color: var(--accent);
+        }
+        
+        /* Navigation */
+        nav {
+            padding: var(--space-sm) 0;
+            border-bottom: 1px solid var(--rule);
+            position: sticky;
+            top: 0;
+            background: var(--paper);
+            z-index: 100;
+        }
+        
+        nav ul {
+            display: flex;
+            gap: var(--space-md);
+            list-style: none;
+            justify-content: center;
+        }
+        
+        nav a {
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+            text-decoration: none;
+            padding: var(--space-xs) 0;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+        
+        nav a:hover {
+            color: var(--ink);
+        }
+        
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        /* Sections */
+        section {
+            padding: var(--space-lg) 0;
+            border-bottom: 1px solid var(--rule);
+        }
+        
+        section:last-of-type {
+            border-bottom: none;
+        }
+        
+        .section-header {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: var(--space-md);
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+        
+        .section-number {
+            font-family: var(--font-display);
+            font-size: 4rem;
+            font-weight: 500;
+            color: var(--rule);
+            line-height: 1;
+        }
+        
+        h2 {
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            border-left: 3px solid var(--accent);
+            padding-left: var(--space-sm);
+        }
+        
+        /* Summary Section */
+        .summary-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--space-lg);
+        }
+        
+        .summary-text {
+            font-family: var(--font-display);
+            font-size: 1.35rem;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+        
+        .summary-text .drop-cap {
+            float: left;
+            font-size: 4.5rem;
+            line-height: 0.8;
+            padding-right: 0.15em;
+            padding-top: 0.1em;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        
+        .summary-sidebar {
+            padding-left: var(--space-md);
+            border-left: 1px solid var(--rule);
+        }
+        
+        .stat-block {
+            margin-bottom: var(--space-md);
+        }
+        
+        .stat-number {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--accent);
+            line-height: 1;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-top: 0.25rem;
+        }
+        
+        /* Experience Section */
+        .experience-grid {
+            display: grid;
+            gap: var(--space-lg);
+        }
+        
+        .experience-item {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: var(--space-md);
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--rule);
+        }
+        
+        .experience-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        
+        .experience-meta {
+            position: relative;
+        }
+        
+        .experience-date {
+            font-size: 0.85rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+        
+        .experience-company {
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            font-style: italic;
+            font-weight: 500;
+            margin-top: 0.25rem;
+        }
+        
+        .experience-company a {
+            color: inherit;
+            text-decoration: none;
+            border-bottom: 1px solid var(--rule);
+            transition: border-color 0.3s;
+        }
+        
+        .experience-company a:hover {
+            border-color: var(--accent);
+        }
+        
+        .experience-location {
+            font-size: 0.8rem;
+            color: var(--muted);
+            font-weight: 500;
+            margin-top: 0.25rem;
+        }
+        
+        .experience-content h3 {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+        }
+        
+        .experience-content > p {
+            font-size: 0.95rem;
+            color: var(--muted);
+            line-height: 1.75;
+            font-weight: 500;
+            margin-bottom: var(--space-sm);
+        }
+        
+        .experience-highlights {
+            margin-top: var(--space-sm);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .highlight-tag {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            padding: 0.35rem 0.7rem;
+            background: var(--ink);
+            color: var(--paper);
+            border-radius: 2px;
+        }
+        
+        /* Subsections within experience */
+        .experience-subsections {
+            margin-top: var(--space-sm);
+        }
+        
+        .subsection {
+            margin-bottom: var(--space-sm);
+        }
+        
+        .subsection h4 {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .subsection h4::before {
+            content: '—';
+            color: var(--rule);
+        }
+        
+        .subsection p {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.7;
+            font-weight: 500;
+            padding-left: 1.5rem;
+        }
+        
+        /* Expandable sections */
+        .expandable {
+            margin-top: var(--space-sm);
+        }
+        
+        .expand-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            color: var(--accent);
+            background: none;
+            border: 1px solid var(--accent);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+        
+        .expand-toggle:hover {
+            background: var(--accent);
+            color: var(--paper);
+        }
+        
+        .expand-toggle .arrow {
+            transition: transform 0.3s ease;
+        }
+        
+        .expand-toggle.active .arrow {
+            transform: rotate(180deg);
+        }
+        
+        .expand-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, padding 0.3s ease;
+            background: var(--highlight-bg);
+            border-radius: 4px;
+            margin-top: 0.5rem;
+        }
+        
+        .expand-content.active {
+            max-height: 2000px;
+            padding: var(--space-sm);
+        }
+        
+        .expand-content h5 {
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--ink);
+        }
+        
+        .expand-content ul {
+            list-style: none;
+            font-size: 0.85rem;
+            line-height: 1.8;
+        }
+        
+        .expand-content ul.two-column {
+            columns: 2;
+            column-gap: var(--space-md);
+        }
+        
+        .expand-content li {
+            break-inside: avoid;
+            padding-left: 1rem;
+            position: relative;
+            color: var(--muted);
+        }
+        
+        .expand-content li::before {
+            content: '·';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+        
+        .expand-content li strong {
+            color: var(--ink);
+            font-weight: 600;
+        }
+        
+        .expand-content li a {
+            color: var(--ink);
+            text-decoration: none;
+            border-bottom: 1px solid var(--rule);
+            transition: border-color 0.3s;
+        }
+        
+        .expand-content li a:hover {
+            border-color: var(--accent);
+        }
+        
+        .partner-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem 0.8rem;
+            padding-left: 0;
+            margin-top: 0.5rem;
+        }
+        
+        .partner-grid li {
+            padding-left: 0;
+            display: inline;
+        }
+        
+        .partner-grid li::before {
+            display: none;
+        }
+        
+        .partner-grid li a {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--ink);
+            text-decoration: none;
+            padding: 0.25rem 0.5rem;
+            background: rgba(184, 134, 11, 0.1);
+            border-radius: 2px;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        
+        .partner-grid li a:hover {
+            background: var(--accent);
+            color: var(--paper);
+        }
+        
+        /* Skills Section */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-md);
+        }
+        
+        .skill-category h4 {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            font-weight: 600;
+            font-style: italic;
+            margin-bottom: var(--space-sm);
+            padding-bottom: var(--space-xs);
+            border-bottom: 1px solid var(--rule);
+        }
+        
+        .skill-category ul {
+            list-style: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            line-height: 2;
+        }
+        
+        .skill-category li {
+            position: relative;
+            padding-left: 1rem;
+        }
+        
+        .skill-category li::before {
+            content: '—';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: 700;
+        }
+        
+        /* Publications Section */
+        .publications-list {
+            columns: 2;
+            column-gap: var(--space-lg);
+        }
+        
+        .publication-item {
+            break-inside: avoid;
+            margin-bottom: var(--space-md);
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--rule);
+        }
+        
+        .publication-item h4 {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .publication-item h4 a {
+            color: inherit;
+            text-decoration: none;
+            border-bottom: 1px solid var(--rule);
+            transition: border-color 0.3s;
+        }
+        
+        .publication-item h4 a:hover {
+            border-color: var(--accent);
+        }
+        
+        .publication-item .pub-type {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+        
+        .publication-item p {
+            font-size: 0.9rem;
+            color: var(--muted);
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+        
+        /* Contact Section */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-lg);
+        }
+        
+        .contact-text {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            line-height: 1.4;
+            font-style: italic;
+            font-weight: 500;
+        }
+        
+        .contact-links {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+            justify-content: center;
+        }
+        
+        .contact-link {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--ink);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .contact-link:hover {
+            color: var(--accent);
+        }
+        
+        .contact-link .link-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            width: 80px;
+        }
+        
+        /* Footer */
+        footer {
+            padding: var(--space-md) 0;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--muted);
+        }
+        
+        footer .colophon {
+            font-family: var(--font-display);
+            font-style: italic;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Animations */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-in {
+            animation: fadeUp 0.8s ease forwards;
+            opacity: 0;
+        }
+        
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+        .delay-5 { animation-delay: 0.5s; }
+        
+        /* Responsive */
+        @media (max-width: 900px) {
+            html { font-size: 16px; }
+            
+            .header-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-md);
+            }
+            
+            .photo-container {
+                width: 120px;
+                height: 120px;
+                margin-bottom: var(--space-sm);
+            }
+            
+            .header-meta {
+                text-align: left;
+            }
+            
+            .summary-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-sidebar {
+                border-left: none;
+                padding-left: 0;
+                border-top: 1px solid var(--rule);
+                padding-top: var(--space-md);
+                display: flex;
+                gap: var(--space-md);
+                flex-wrap: wrap;
+            }
+            
+            .experience-item {
+                grid-template-columns: 1fr;
+            }
+            
+            .skills-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .publications-list {
+                columns: 1;
+            }
+            
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .expand-content ul.two-column {
+                columns: 1;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            :root {
+                --space-lg: 3rem;
+                --space-xl: 5rem;
+            }
+            
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                gap: var(--space-sm);
+            }
+            
+            .section-header {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-number {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-grid">
+                <div class="masthead">
+                    <span class="issue-number animate-in delay-1">Curriculum Vitae — 2026 Edition</span>
+                    <h1 class="animate-in delay-2">
+                        John
+                        <span class="surname">Xie</span>
+                    </h1>
+                    <p class="title-role animate-in delay-3">Senior Industry Editor & Content Strategist</p>
+                </div>
+                <div class="header-meta animate-in delay-4">
+                    <p>Shanghai, China</p>
+                    <p><a href="mailto:xiechao.net@gmail.com">xiechao.net@gmail.com</a></p>
+                    <p><a href="https://www.linkedin.com/in/john-xie-2b4649219/">LinkedIn</a></p>
+                </div>
+            </div>
+        </header>
+        
+        <nav class="animate-in delay-5">
+            <ul>
+                <li><a href="#summary">Summary</a></li>
+                <li><a href="#experience">Experience</a></li>
+                <li><a href="#skills">Expertise</a></li>
+                <li><a href="#publications">Publications</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+        
+        <main>
+            <section id="summary">
+                <div class="section-header">
+                    <span class="section-number">01</span>
+                    <h2>Professional Summary</h2>
+                </div>
+                <div class="summary-content">
+                    <div class="summary-text">
+                        <span class="drop-cap">A</span>seasoned B2B industry editor specialising in personal care, pharmaceutical, and specialty chemical sectors. With extensive experience managing trade publications and conducting executive interviews at major international exhibitions, I transform complex technical content into compelling narratives that connect global suppliers with Chinese markets. My work bridges innovation and communication across the beauty and health industries.
+                    </div>
+                    <div class="summary-sidebar">
+                        <div class="stat-block">
+                            <div class="stat-number">300+</div>
+                            <div class="stat-label">Deep-dive Articles</div>
+                        </div>
+                        <div class="stat-block">
+                            <div class="stat-number">100+</div>
+                            <div class="stat-label">Executive Interviews</div>
+                        </div>
+                        <div class="stat-block">
+                            <div class="stat-number">2</div>
+                            <div class="stat-label">Magazines Managed</div>
+                        </div>
+                        <div class="stat-block">
+                            <div class="stat-number">50K+</div>
+                            <div class="stat-label">Readers Reached</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="experience">
+                <div class="section-header">
+                    <span class="section-number">02</span>
+                    <h2>Professional Experience</h2>
+                </div>
+                <div class="experience-grid">
+                    <article class="experience-item">
+                        <div class="experience-meta">
+                            <div class="experience-date">Dec 2021 — Present</div>
+                            <div class="experience-company"><a href="https://www.industrysourcing.cn" target="_blank">Ringier Trade Media</a></div>
+                            <div class="experience-location">Shanghai, China</div>
+                        </div>
+                        <div class="experience-content">
+                            <h3>Senior Industry Editor</h3>
+                            <p>Ringier Trade Media is a leading B2B industrial media provider established in 1998, delivering high-quality content and integrated media solutions that connect industry experts, suppliers, and end-users across greater China. I manage content across multiple platforms and formats: print magazines, exhibition flash reports, e-newsletters, webinars, websites, WeChat Official Accounts, seminars, and industry conferences.</p>
+                            
+                            <div class="experience-subsections">
+                                <div class="subsection">
+                                    <h4>Personal Care & Cosmetics</h4>
+                                    <p>Lead editor for <em>happi China</em>—the Chinese edition of the renowned US personal care industry magazine <em>happi</em>. Since 2003, this publication has provided comprehensive coverage of basic research, ingredient applications, formulation technology, market trends, packaging design, and OEM/ODM services. Responsibilities include producing monthly magazines, managing digital channels (website, WeChat, e-newsletter, webinar), conducting executive interviews with R&D leaders from L'Oréal, Estée Lauder, Unilever, DIOR, Shiseido, Beiersdorf, Proya, Pechoin, and other global and domestic brands. Organise industry seminars and moderate roundtable discussions covering skincare science, formulation innovation, and regulatory developments.</p>
+                                </div>
+                                
+                                <div class="subsection">
+                                    <h4>Pharmaceutical</h4>
+                                    <p>Managing editor for <em>International Pharmaceutical News for China</em>, covering pharmaceutical manufacturing technology, regulatory updates, and industry developments. Produce digital content and e-newsletters tracking developments in AI-driven drug discovery, biologics manufacturing, and GMP compliance.</p>
+                                </div>
+                                
+                                <div class="subsection">
+                                    <h4>Cross-industry Support</h4>
+                                    <p>Provide editorial coverage for coatings, plastics, medical devices, and food industries at major trade exhibitions including PCHi, CPHI, CHINAPLAS, FIC, AchemAsia, CMEF/ICMD, Medtek China, and CIIE. Conduct on-site interviews, live broadcasts, and produce post-event reports.</p>
+                                </div>
+                                
+                                <div class="subsection">
+                                    <h4>Industry Awards & Events</h4>
+                                    <p>Programme director for the annual <em>Ringier Technology Innovation Awards</em> in personal care—engaging 200+ supply chain companies with 350+ product submissions and 18 expert judges. Co-organiser of <em>Ringier Formulation Master Awards</em>, a competition celebrating excellence in cosmetic formulation. Moderate roundtable discussions and industry seminars at company anniversaries and association conferences.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="expandable">
+                                <button class="expand-toggle" onclick="toggleExpand(this)">
+                                    <span>Featured Interviews & Partners</span>
+                                    <span class="arrow">▼</span>
+                                </button>
+                                <div class="expand-content">
+                                    <h5>Executive Interviews (Selected)</h5>
+                                    <ul>
+                                        <li><a href="https://www.industrysourcing.cn/article/464591" target="_blank"><strong>DIOR</strong> — Virginie Couturaud, Product Science Communication Director</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/467887" target="_blank"><strong>Estée Lauder</strong> — Shen Chunlin, Global Safety Assessment</a></li>
+                                        <li><strong>L'Oréal / LVMH</strong> — Naima Chentoufi, R&D Laboratory Director</li>
+                                        <li><a href="https://www.industrysourcing.cn/article/468834" target="_blank"><strong>Unilever China</strong> — Gu Xuelan, Chief Scientist, R&D Centre</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/466965" target="_blank"><strong>Beiersdorf</strong> — Du Xiqian, Science Communication, Shanghai Innovation Centre</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/467928" target="_blank"><strong>Kao China</strong> — Li Zeqian, R&D Manager</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/463410" target="_blank"><strong>Amorepacific</strong> — Zhou Qi; Wen Xiang, Professor & Consultant</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/467878" target="_blank"><strong>Proya</strong> — Chang Xiaowei, Shanghai R&D Centre Director</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/464413" target="_blank"><strong>Pechoin</strong> — Jiang Ligang, Chief Technology Officer</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/471553" target="_blank"><strong>COSMAX</strong> — Li Zhengqun, Biological Innovation Centre Director</a></li>
+                                        <li><strong>Shanghai Jahwa</strong> — Yin Qingfei, Senior Researcher</li>
+                                        <li><a href="https://www.industrysourcing.cn/article/466937" target="_blank"><strong>Chando Group</strong> — Yun Xinru, Medical-device Cosmetics Technology Lead</a></li>
+                                    </ul>
+                                    
+                                    <h5 style="margin-top: 1rem;">Supply Chain Partners (Selected)</h5>
+                                    <ul class="partner-grid">
+                                        <li><a href="https://www.industrysourcing.cn/article/465560" target="_blank">BASF</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/458067" target="_blank">Evonik</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/471550" target="_blank">Clariant</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/458066" target="_blank">Dow</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/466622" target="_blank">LANXESS</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/465579" target="_blank">Symrise</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/465421" target="_blank">Ashland</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/461602" target="_blank">Lubrizol</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/465813" target="_blank">AAK</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/465310" target="_blank">Nouryon</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/458185" target="_blank">Elkem Silicones</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/465442" target="_blank">IMCD</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/458204" target="_blank">DKSH</a></li>
+                                        <li><a href="https://www.industrysourcing.cn/article/457428" target="_blank">Brenntag</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="experience-highlights">
+                                <span class="highlight-tag">Editorial Strategy</span>
+                                <span class="highlight-tag">B2B Content</span>
+                                <span class="highlight-tag">Technical Writing</span>
+                                <span class="highlight-tag">Event Coverage</span>
+                                <span class="highlight-tag">Industry Awards</span>
+                                <span class="highlight-tag">Conference Moderation</span>
+                            </div>
+                        </div>
+                    </article>
+                    
+                    <article class="experience-item">
+                        <div class="experience-meta">
+                            <div class="experience-date">Apr 2021 — Nov 2021</div>
+                            <div class="experience-company">Informa PLC</div>
+                            <div class="experience-location">Shanghai, China</div>
+                        </div>
+                        <div class="experience-content">
+                            <h3>Editor</h3>
+                            <p>Editor for the media platforms associated with <strong>CBE China Beauty Expo</strong>—China's largest beauty industry trade show—as well as the industry publication <em>Cosmetic News</em>. Researched the cosmetics market, conducted field investigations visiting retail stores and distribution channels across multiple Chinese cities, and analysed regional market dynamics. Wrote and edited content for web and WeChat platforms, managing an Official Account with over 250,000 followers. Developed editorial plans coordinated with CBE exhibition cycles, and created promotional content for industry events.</p>
+                            <div class="experience-highlights">
+                                <span class="highlight-tag">Market Research</span>
+                                <span class="highlight-tag">Field Investigation</span>
+                                <span class="highlight-tag">Social Media</span>
+                                <span class="highlight-tag">Exhibition Media</span>
+                            </div>
+                        </div>
+                    </article>
+                    
+                    <article class="experience-item">
+                        <div class="experience-meta">
+                            <div class="experience-date">2017 — 2021</div>
+                            <div class="experience-company">Independent Projects</div>
+                            <div class="experience-location">China</div>
+                        </div>
+                        <div class="experience-content">
+                            <h3>Editor & Translator</h3>
+                            <p>Founded independent publications exploring typography, typeface design, and visual communication from technical and cultural perspectives. Contributed to academic translation projects covering international social science research. These pursuits sharpened my sensitivity to visual detail and cross-cultural communication—skills that now inform how I present complex technical information to diverse professional audiences.</p>
+                            <div class="experience-highlights">
+                                <span class="highlight-tag">Typography</span>
+                                <span class="highlight-tag">Translation</span>
+                                <span class="highlight-tag">Visual Communication</span>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </section>
+            
+            <section id="skills">
+                <div class="section-header">
+                    <span class="section-number">03</span>
+                    <h2>Areas of Expertise</h2>
+                </div>
+                <div class="skills-grid">
+                    <div class="skill-category">
+                        <h4>Editorial & Content</h4>
+                        <ul>
+                            <li>Technical copywriting</li>
+                            <li>Long-form journalism</li>
+                            <li>Executive interviews</li>
+                            <li>Industry analysis</li>
+                            <li>Event moderation</li>
+                            <li>Generative AI tools</li>
+                        </ul>
+                    </div>
+                    <div class="skill-category">
+                        <h4>Industry Sectors</h4>
+                        <ul>
+                            <li>Personal care & cosmetics</li>
+                            <li>Pharmaceutical</li>
+                            <li>Specialty chemicals</li>
+                            <li>Medical devices</li>
+                            <li>Plastics & packaging</li>
+                        </ul>
+                    </div>
+                    <div class="skill-category">
+                        <h4>Languages</h4>
+                        <ul>
+                            <li>Chinese (Native)</li>
+                            <li>Cantonese (Native)</li>
+                            <li>English (Fluent)</li>
+                            <li>Japanese (Basic)</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="publications">
+                <div class="section-header">
+                    <span class="section-number">04</span>
+                    <h2>Publications & Awards</h2>
+                </div>
+                <div class="publications-list">
+                    <div class="publication-item">
+                        <span class="pub-type">Magazine</span>
+                        <h4><a href="https://www.industrysourcing.cn/magazines/?mid=256&page=1" target="_blank">happi China</a></h4>
+                        <p>Lead editor for B2B publication covering personal care innovations, formulation technology, and market trends. Chinese edition of the renowned US magazine <em>happi</em>, published since 2003.</p>
+                    </div>
+                    <div class="publication-item">
+                        <span class="pub-type">Magazine</span>
+                        <h4>International Pharmaceutical News for China</h4>
+                        <p>Managing editorial content for pharmaceutical industry developments, regulatory updates, and manufacturing technology.</p>
+                    </div>
+                    <div class="publication-item">
+                        <span class="pub-type">Industry Award</span>
+                        <h4><a href="https://www.industrysourcing.cn/meeting/innovation" target="_blank">Ringier Technology Innovation Awards</a></h4>
+                        <p>Programme director for annual awards recognising innovation in personal care ingredients, packaging, and manufacturing—engaging 200+ companies with 350+ submissions.</p>
+                    </div>
+                    <div class="publication-item">
+                        <span class="pub-type">Industry Award</span>
+                        <h4>Ringier Formulation Master Awards</h4>
+                        <p>Co-organiser of competition celebrating excellence in cosmetic formulation, connecting formulators with leading ingredient suppliers.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="contact">
+                <div class="section-header">
+                    <span class="section-number">05</span>
+                    <h2>Get in Touch</h2>
+                </div>
+                <div class="contact-grid">
+                    <div class="contact-text">
+                        Open to editorial collaborations, industry speaking engagements, and content strategy consulting.
+                    </div>
+                    <div class="contact-links">
+                        <a href="mailto:xiechao.net@gmail.com" class="contact-link">
+                            <span class="link-label">Email</span>
+                            xiechao.net@gmail.com
+                        </a>
+                        <a href="https://www.linkedin.com/in/john-xie-2b4649219/" class="contact-link" target="_blank">
+                            <span class="link-label">LinkedIn</span>
+                            john-xie-2b4649219
+                        </a>
+                        <a href="tel:+8618609601862" class="contact-link">
+                            <span class="link-label">Mobile</span>
+                            +86 186 0960 1862
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p class="colophon">Set in Playfair Display & Source Sans 3</p>
+            <p>© 2026 John Xie. Crafted with care.</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Toggle expandable sections
+        function toggleExpand(button) {
+            button.classList.toggle('active');
+            const content = button.nextElementSibling;
+            content.classList.toggle('active');
+        }
+        
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+        
+        const sectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        document.querySelectorAll('section').forEach(section => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(30px)';
+            section.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+            sectionObserver.observe(section);
+        });
+        
+        // Smooth scroll for navigation
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    </script>
+</body>
+</html>
